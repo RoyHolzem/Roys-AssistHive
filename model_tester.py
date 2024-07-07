@@ -33,7 +33,7 @@ def predict_service(text):
     
     return prediction, confidence
 
-# Example usage
+# Tester
 if __name__ == "__main__":
     input_text = "Hello I have a problem with my invoice it seems I've been overcharged"
     predicted_service, confidence = predict_service(input_text)

@@ -1,0 +1,18 @@
+{
+  "statusCode": 200,
+  "body": {
+    "original_text": "I am experiencing connectivity issues with my internet service.",
+    "preprocessed_text": "experiencing connectivity issues internet service",
+    "classification_result": {
+      "predicted_service": "internet_service",
+      "department": "technical_support",
+      "confidence": {
+        "account": 0.03518318142402638,
+        "billing": 0.12891921263894948,
+        "internet_service": 0.5998070591190486,
+        "mobile_service": 0.08825616834547055,
+        "tv_service": 0.14783437847250488
+      }
+    }
+  }
+}

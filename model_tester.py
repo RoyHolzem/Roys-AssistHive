@@ -35,7 +35,7 @@ def predict_service(text):
 
 # Tester
 if __name__ == "__main__":
-    input_text = "Hello I have a problem with my invoice it seems I've been overcharged"
+    input_text = "my phone doesnt work i cant get no calls"
     predicted_service, confidence = predict_service(input_text)
     print(f"The predicted service category is: {predicted_service}")
     print("Confidence scores:")

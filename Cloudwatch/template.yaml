@@ -1,0 +1,116 @@
+Resources:
+  ApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: ApiGateway
+      Description: API Gateway for AssistHive
+      EndpointConfiguration:
+        Types: EDGE
+      FailOnWarnings: true
+
+  ApiResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGateway.RootResourceId
+      PathPart: preprocess
+      RestApiId: !Ref ApiGateway
+
+  ApiMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      ResourceId: !Ref ApiResource
+      RestApiId: !Ref ApiGateway
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PreprocessorFunction.Arn}/invocations
+
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: assisthive
+
+  PreprocessorLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      LayerName: PreprocessorLayer
+      Content:
+        S3Bucket: assisthive
+        S3Key: path/to/preprocessor/layer.zip
+      CompatibleRuntimes:
+        - python3.8
+
+  ClassifierLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      LayerName: ClassifierLayer
+      Content:
+        S3Bucket: assisthive
+        S3Key: path/to/classifier/layer.zip
+      CompatibleRuntimes:
+        - python3.8
+
+  PreprocessorFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: PreprocessorFunction
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.8
+      Role: arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_LAMBDA_ROLE
+      Code:
+        S3Bucket: assisthive
+        S3Key: path/to/preprocessor/code.zip
+      Layers:
+        - !Ref PreprocessorLayer
+      Environment:
+        Variables:
+          RDS_HOST: customerdata.c9aoqc44eckn.us-east-1.rds.amazonaws.com
+          RDS_USER: admin
+          RDS_PASSWORD: mypassword
+          RDS_DB_NAME: customerdata
+
+  ClassifierFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: ClassifierFunction
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.8
+      Role: arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_LAMBDA_ROLE
+      Code:
+        S3Bucket: assisthive
+        S3Key: path/to/classifier/code.zip
+      Layers:
+        - !Ref ClassifierLayer
+      Environment:
+        Variables:
+          RDS_HOST: customerdata.c9aoqc44eckn.us-east-1.rds.amazonaws.com
+          RDS_USER: admin
+          RDS_PASSWORD: mypassword
+          RDS_DB_NAME: customerdata
+
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: customerdata
+      AllocatedStorage: 20
+      DBInstanceClass: db.t2.micro
+      Engine: mysql
+      MasterUsername: admin
+      MasterUserPassword: mypassword
+      DBName: customerdata
+      PubliclyAccessible: true
+      MultiAZ: false
+      EngineVersion: 8
+      StorageType: gp2
+      BackupRetentionPeriod: 7
+
+Outputs:
+  ApiGatewayUrl:
+    Value: !Sub https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/preprocess
+    Description: URL for the API Gateway
+
+  WebInterfaceUrl:
+    Value: !Sub http://${WebInterfaceBucket}.s3-website-${AWS::Region}.amazonaws.com
+    Description: URL for the Web Interface

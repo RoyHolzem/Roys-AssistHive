@@ -1,4 +1,6 @@
 import pickle
+import re
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Function to load the model and vectorizer from disk
 def load_model():
@@ -10,8 +12,6 @@ def load_model():
 
 # Function to preprocess the input text
 def preprocess_input(text):
-    # Assuming the same preprocessing was used during training
-    import re
     text = text.lower()  # Convert text to lowercase
     text = re.sub(r'\W', ' ', text)  # Remove non-word characters
     text = re.sub(r'\s+', ' ', text).strip()  # Remove extra spaces
@@ -36,8 +36,11 @@ def predict_service(text):
 # Tester
 if __name__ == "__main__":
     input_text = "my phone doesnt work i cant get no calls"
+    print(f"Input text: {input_text}")
+    
     predicted_service, confidence = predict_service(input_text)
     print(f"The predicted service category is: {predicted_service}")
+    
     print("Confidence scores:")
     for service, score in confidence.items():
         print(f"  {service}: {score:.4f}")
